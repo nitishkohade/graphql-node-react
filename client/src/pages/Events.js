@@ -272,12 +272,15 @@ class EventPage extends Component {
                         <p>Share your own Events!</p>
                         <button className="btn" onClick={this.startCreateEventHandler}>Create Event</button>    
                     </div>}
-                    {this.state.isLoading ? <Spinner /> : ''}
+                    {
+                    this.state.isLoading ? <Spinner /> : 
                     <EventList 
-                    events={this.state.events}
-                    userId={this.context.userId}
-                    onDetails={this.onDetails}
+                        events={this.state.events}
+                        userId={this.context.userId}
+                        onDetails={this.onDetails}
                     />
+                    }
+                    
                    
             </React.Fragment>
         )

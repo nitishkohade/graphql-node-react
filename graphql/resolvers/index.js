@@ -3,7 +3,13 @@ const UserModel = require('../../models/user')
 const BookingModel = require('../../models/booking')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const DataLoader = require('dataloader')
 
+const eventLoader = new DataLoader((eventIds) => {
+    const d = events(eventIds)
+    console.log(d)
+    return d
+})
 
 const user = async userId => {
     try{
@@ -14,17 +20,24 @@ const user = async userId => {
     }
 }
 
-// const events = eventIds => {
-//     return Event.find({_id: {$in: eventIds}})
-//     .then(events => {
-//         return events.map(event => {
-//             return {...event, _id: event._id, creator: await user(event.creator)}
-//         })
-//     })
-//     .catch(err => {
-//         throw err
-//     })
-// }
+const events = async eventIds => {
+
+    try {
+       const events = await EventModel.find({_id: {$in: eventIds}})
+       return events.map(obj => {
+            return {
+                _id: obj._id,
+                title: obj.title,
+                description: obj.description,
+                price: obj.price,
+                date: new Date(obj.date).toISOString(),
+                creator: user(obj.creator).then(res => res)
+            }
+        })
+    } catch(err) {
+        throw err
+    }
+}
 
 const singleEvent = async eventId => {
     try {
@@ -63,7 +76,7 @@ module.exports = {
             throw new Error('unauthenticated')
         }
         try{
-            const bookings = await BookingModel.find();
+            const bookings = await BookingModel.find({userId: req.userId});
             return bookings.map(async booking => {
                 return {
                     ...booking, 
