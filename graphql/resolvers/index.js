@@ -64,12 +64,14 @@ module.exports = {
         }
         try{
             const bookings = await BookingModel.find();
-            bookings.map(booking => {
+            return bookings.map(async booking => {
                 return {
                     ...booking, 
-                    _id: booking._id, 
+                    _id: booking._id,
+                    user: await user(booking.userId),
+                    event: await singleEvent(booking.eventId),
                     createdAt: new Date(booking.createdAt).toISOString(),
-                    updatedAt: new Date(booking.updatedAt).toISOString()
+                    updatedAt: new Date(booking.updatedAt).toISOString(),
                 }
             })
 
