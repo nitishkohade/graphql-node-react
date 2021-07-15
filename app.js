@@ -16,6 +16,8 @@ const path = require('path')
 
 app.use(bodyParser.json())
 
+const PORT = process.env.PORT || 3000
+
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS')
@@ -48,7 +50,7 @@ app.get('*', (req, res) => {
 mongoose.connect(`
     mongodb+srv://${USER}:${PASSWORD}@cluster.h3lz1.mongodb.net/${DB}?retryWrites=true&w=majority
 `).then(() => {
-    app.listen(3000)
+    app.listen(PORT)
 }).catch(err => {
     console.log(err)
 })
