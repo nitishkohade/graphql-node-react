@@ -131,29 +131,19 @@ module.exports = {
                 throw err
             })
     },
-    createUser: (args) => {
+    createUser: async (args) => {
         const {email, password} = args.userInput
-        return UserModel.findOne({
-            email
-        }).then(res=> {
-            if(res) {
-                throw new Error('User exists already')
-            }
-            
-            return bcrypt.hash(password, 12)
-        })            
-        .then(
-            hashedPass => {
-                const user = new UserModel({
-                    email, password: hashedPass
-                })
-                return user.save()
-            }
-        )
-        .then(
-            (res) => res
-        )
-        .catch(err => {throw err})
+        const user = await UserModel.findOne({email: email})
+        if(user) {
+            throw new Error('User exists already')
+        }
+        const hashedPass = await bcrypt.hash(password, 12)
+        const newUser = new UserModel({
+            email, password: hashedPass
+        })
+        const res = await newUser.save()
+        if(!res) {throw new Error("Something went wrong")}
+        return res 
     },
     bookEvent: async (args, req) => {
         if(!req.isAuth) {

@@ -9,15 +9,18 @@ import AuthContext from './context/auth-context';
 
 class App extends Component {
   state = {
-    token: null,
+    token: localStorage.getItem("token"),
     userId: null
   }
 
   login = (token, userId, TokenExpiration) => {
+    console.log(localStorage.getItem("token"))
+    localStorage.setItem("token", token)
     this.setState({token: token, userId: userId})
   }
 
   logout = () => {
+    localStorage.removeItem("token")
     this.setState({token: null, userId: null})
   }
 

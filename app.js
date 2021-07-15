@@ -27,11 +27,17 @@ app.use((req, res, next) => {
 
 app.use(isAuth)
 
-app.use('/graphql', graphqlHTTP({
-    schema,
-    rootValue,
-    graphiql: true
-}))
+app.use('/graphql', (req, res) => {
+    graphqlHTTP({
+        schema,
+        rootValue,
+        graphiql: true,
+        customFormatErrorFn: (err) => {
+            console.log(err)
+            return ({message: err.message, statusCode: 500})
+        }
+    })(req, res)
+})
 
 mongoose.connect(`
     mongodb+srv://${USER}:${PASSWORD}@cluster.h3lz1.mongodb.net/${DB}?retryWrites=true&w=majority

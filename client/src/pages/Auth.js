@@ -1,11 +1,15 @@
 import React, {Component} from 'react';
+import FormWithToasts from '../components/Toaster';
 import AuthContext from '../context/auth-context';
 import './auth.css'
+
 
 class AuthPage extends Component {
 
     state = {
-        isLogin: true
+        isLogin: true,
+        error: null,
+        signupSuccess: null
     }
 
     static contextType = AuthContext
@@ -57,7 +61,6 @@ class AuthPage extends Component {
         }
         
         
-
         fetch('http://localhost:8000/graphql', {
             method: 'POST',
             body: JSON.stringify(requestBody),
@@ -66,7 +69,7 @@ class AuthPage extends Component {
             }
         }).then(res => {
             if(res.status !== 200 && res.status !== 201) {
-                throw new Error('Failed!')
+                throw res.json()
             }
             return res.json()
         })
@@ -75,9 +78,18 @@ class AuthPage extends Component {
                 const {token, userId, tokenExpiration} = resData.data.login
                 this.context.login(token, userId, tokenExpiration)
             }
+            if(resData.data && resData.data.createUser) {
+                this.setState({
+                    signupSuccess: "Successfully Registered! Please Login using your credentials",
+                    error: null
+                })
+            }
         })
-        .catch(err => {
-            console.log(err)
+        .catch(async data => {
+            const error = await data
+            this.setState({
+                error: error && error.errors && error.errors[0] && error.errors[0].message
+            })
         })
     }
     render() {
@@ -95,6 +107,9 @@ class AuthPage extends Component {
                     <button type="submit">Submit</button>
                     <button type="button" onClick={this.switchModeHandler}>Switch to {this.state.isLogin ? 'Signup' : 'Login'}</button>
                 </div>
+                {this.state.error 
+                ? <FormWithToasts error={this.state.error} /> 
+                : <FormWithToasts success={this.state.signupSuccess} />}
             </form>
         )
     }
