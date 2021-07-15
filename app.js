@@ -12,6 +12,7 @@ const USER = process.env.USER
 const PASSWORD = process.env.PASSWORD
 const DB = process.env.DB
 const isAuth = require('./middleware/is-auth')
+const path = require('path')
 
 app.use(bodyParser.json())
 
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 })
 
 app.use(isAuth)
+app.use(express.static(path.join(__dirname, 'client/build')))
 
 app.use('/graphql', (req, res) => {
     graphqlHTTP({
@@ -39,10 +41,14 @@ app.use('/graphql', (req, res) => {
     })(req, res)
 })
 
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'))
+})
+
 mongoose.connect(`
     mongodb+srv://${USER}:${PASSWORD}@cluster.h3lz1.mongodb.net/${DB}?retryWrites=true&w=majority
 `).then(() => {
-    app.listen(8000)
+    app.listen(3000)
 }).catch(err => {
     console.log(err)
 })

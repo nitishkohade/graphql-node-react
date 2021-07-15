@@ -7,14 +7,23 @@ const DataLoader = require('dataloader')
 
 const eventLoader = new DataLoader((eventIds) => {
     const d = events(eventIds)
-    console.log(d)
+    return d
+})
+
+const userLoader = new DataLoader((userIds) => {
+    const d = UserModel.find({_id: {$in: userIds}})
     return d
 })
 
 const user = async userId => {
     try{
-        const user = await UserModel.findById(userId)
-        return user
+        const user = await userLoader.load(userId.toString())
+        return {
+            ...user,
+            _id: user._id,
+            email: user.email,
+            createdEvents: eventLoader.loadMany.bind(this, user.createdEvents)
+        }
     } catch(err) {
         throw err
     }
@@ -31,7 +40,7 @@ const events = async eventIds => {
                 description: obj.description,
                 price: obj.price,
                 date: new Date(obj.date).toISOString(),
-                creator: user(obj.creator).then(res => res)
+                creator: user(obj.creator)
             }
         })
     } catch(err) {
@@ -41,15 +50,9 @@ const events = async eventIds => {
 
 const singleEvent = async eventId => {
     try {
-        const event = await EventModel.findById(eventId)
-        return {...event,
-            _id: event._id,
-            title: event.title,
-            description: event.description,
-            price: event.price,
-            date: new Date(event.date).toISOString(),
-            creator: await user(event.creator)
-        }
+        // const event = await EventModel.findById(eventId)
+        const event = await eventLoader.load(eventId.toString())
+        return event
     } catch(err) {
         throw err;
     }
